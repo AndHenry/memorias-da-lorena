@@ -177,10 +177,10 @@ export default function GaleriaPage() {
       )}
 
       {/* Page content */}
-      <div className="min-h-screen px-5 py-12">
+      <div className="min-h-screen px-5" style={{ paddingTop: '3.5rem', paddingBottom: '3rem' }}>
         <div className="container-app">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4" style={{ marginBottom: '2rem' }}>
             <Link href="/" className="p-2 glass-card hover:bg-white/10 transition-colors rounded-xl" aria-label="Voltar">
               <ArrowLeft size={20} />
             </Link>
@@ -188,12 +188,20 @@ export default function GaleriaPage() {
               <h1 className="heading-lg" style={{ fontFamily: 'var(--font-title)', color: 'var(--star-gold)' }}>
                 Galeria de Memórias
               </h1>
-              <p className="text-muted text-sm">{media.length} {media.length === 1 ? 'memória compartilhada' : 'memórias compartilhadas'}</p>
+              {media.length > 0 && (
+                <span
+                  className="inline-block text-xs font-semibold px-3 py-1 rounded-full mt-1"
+                  style={{ background: 'rgba(244,208,63,0.1)', border: '1px solid rgba(244,208,63,0.2)', color: 'var(--star-gold)' }}
+                >
+                  ✨ {media.length} {media.length === 1 ? 'memória compartilhada' : 'memórias compartilhadas'}
+                </span>
+              )}
             </div>
           </div>
+          <div className="divider-gold" style={{ marginBottom: '1.5rem' }} />
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-wrap gap-3" style={{ marginBottom: '1rem' }}>
             {(['all', 'photo', 'video'] as const).map((f) => (
               <button
                 key={f}
@@ -238,7 +246,7 @@ export default function GaleriaPage() {
           {/* Grid */}
           {galleryState === 'ok' && media.length > 0 && (
             <>
-              <div className="media-grid" role="list" aria-label="Galeria de fotos e vídeos">
+              <div className="media-grid" role="list" aria-label="Galeria de fotos e vídeos" style={{ marginTop: '1.5rem' }}>
                 {media.map((item, index) => (
                   <div
                     key={item.id}
