@@ -141,7 +141,7 @@ export default function EnviarPage() {
                   ref={fileInputRef}
                   type="file"
                   id="file-input"
-                  accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/webm,video/quicktime"
                   multiple
                   className="sr-only"
                   onChange={handleFileChange}
@@ -156,7 +156,7 @@ export default function EnviarPage() {
                     Toque para selecionar ou arraste arquivos
                   </p>
                   <p className="text-muted text-sm">
-                    JPG, PNG, WebP, MP4, WebM — até {files.length}/{MAX_FILES} selecionados
+                    JPG, PNG, WebP, HEIC (iPhone), MP4 — até {files.length}/{MAX_FILES} selecionados
                   </p>
                 </div>
               </div>
@@ -236,18 +236,42 @@ function FileItem({
   onRemove: (id: string) => void
   onRetry: (id: string) => void
 }) {
-  const isImage = file.file.type.startsWith('image/')
+  const isVideo = file.file.type.startsWith('video/')
+  const [duration, setDuration] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isVideo || !file.preview) return
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      const secs = Math.round(video.duration)
+      const m = Math.floor(secs / 60)
+      const s = secs % 60
+      setDuration(`${m}:${s.toString().padStart(2, '0')}`)
+    }
+    video.src = file.preview
+  }, [isVideo, file.preview])
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
       {/* Thumbnail */}
-      <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
+      <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center relative"
         style={{ background: 'rgba(255,255,255,0.05)' }}>
-        {file.preview ? (
+        {file.preview && !isVideo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={file.preview} alt="" className="w-full h-full object-cover" />
+        ) : isVideo ? (
+          <>
+            <Film size={20} style={{ color: 'var(--cosmic-light)' }} />
+            {duration && (
+              <span className="absolute bottom-0 right-0 text-[9px] font-bold px-1 rounded-tl"
+                style={{ background: 'rgba(0,0,0,0.7)', color: 'var(--star-gold)' }}>
+                {duration}
+              </span>
+            )}
+          </>
         ) : (
-          <Film size={20} style={{ color: 'var(--cosmic-light)' }} />
+          <ImageIcon size={20} style={{ color: 'var(--star-gold)', opacity: 0.6 }} />
         )}
       </div>
 

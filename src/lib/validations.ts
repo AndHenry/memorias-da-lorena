@@ -4,6 +4,8 @@ export const ALLOWED_PHOTO_TYPES = [
   'image/jpg',
   'image/png',
   'image/webp',
+  'image/heic',
+  'image/heif',
 ]
 
 export const ALLOWED_VIDEO_TYPES = [
@@ -14,7 +16,7 @@ export const ALLOWED_VIDEO_TYPES = [
 ]
 
 export const ALLOWED_EXTENSIONS = [
-  '.jpg', '.jpeg', '.png', '.webp',
+  '.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif',
   '.mp4', '.webm', '.mov', '.avi',
 ]
 

@@ -45,5 +45,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao buscar mídias.' }, { status: 500 })
   }
 
-  return NextResponse.json({ media: media || [] })
+  // When filtering, also return how many approved items exist in total (all types)
+  // so the client can show appropriate empty states
+  let total_approved = (media || []).length
+  if (type && (media || []).length === 0) {
+    const { count } = await supabaseAdmin
+      .from('media')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', event.id)
+      .eq('moderation_status', 'approved')
+    total_approved = count ?? 0
+  }
+
+  return NextResponse.json({ media: media || [], total_approved })
 }

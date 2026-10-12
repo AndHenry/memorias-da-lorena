@@ -19,7 +19,8 @@ export default function GaleriaPage() {
   const [hasMore, setHasMore] = useState(true)
   const [filter, setFilter] = useState<FilterType>('all')
   const [lightbox, setLightbox] = useState<{ index: number } | null>(null)
-  const [galleryState, setGalleryState] = useState<'loading' | 'ok' | 'empty' | 'private'>('loading')
+  const [galleryState, setGalleryState] = useState<'loading' | 'ok' | 'empty' | 'empty-filter' | 'private'>('loading')
+  const [totalApproved, setTotalApproved] = useState(0)
   const loadRef = useRef(false)
 
   const fetchMedia = useCallback(
@@ -42,7 +43,17 @@ export default function GaleriaPage() {
         const items: Media[] = data.media || []
         setMedia((prev) => (reset ? items : [...prev, ...items]))
         setHasMore(items.length === PAGE_SIZE)
-        setGalleryState(reset && items.length === 0 ? 'empty' : 'ok')
+
+        if (reset && items.length === 0) {
+          if (type !== 'all') {
+            setGalleryState('empty-filter')
+          } else {
+            setTotalApproved(data.total_approved ?? 0)
+            setGalleryState('empty')
+          }
+        } else {
+          setGalleryState('ok')
+        }
       } catch {
         setGalleryState('ok')
       } finally {
@@ -231,15 +242,37 @@ export default function GaleriaPage() {
 
           {galleryState === 'empty' && (
             <div className="text-center py-24">
-              <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{ background: 'rgba(244,208,63,0.1)', border: '1px solid rgba(244,208,63,0.2)' }}>
+              <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center pulse-gold"
+                style={{ background: 'rgba(244,208,63,0.08)', border: '1px solid rgba(244,208,63,0.25)' }}>
                 <Camera size={32} style={{ color: 'var(--star-gold)' }} />
               </div>
-              <p className="heading-md mb-3" style={{ fontFamily: 'var(--font-title)' }}>
-                Ainda sem memórias
+              <p className="heading-md mb-2" style={{ fontFamily: 'var(--font-title)', color: 'var(--star-gold)' }}>
+                As memórias chegam em breve
               </p>
-              <p className="text-muted mb-6">Seja o primeiro a compartilhar uma lembrança!</p>
-              <Link href="/identificacao" className="btn btn-primary">Enviar fotos</Link>
+              <p className="text-muted mb-2" style={{ maxWidth: '26rem', margin: '0 auto 1.5rem' }}>
+                {totalApproved === 0
+                  ? 'Ainda ninguém enviou fotos. Seja o primeiro a fazer parte desta noite estrelada!'
+                  : 'As fotos estão sendo revisadas e em breve aparecerão aqui. Obrigado por participar! 🌟'}
+              </p>
+              <Link href="/identificacao" className="btn btn-primary">Enviar minhas fotos</Link>
+            </div>
+          )}
+
+          {galleryState === 'empty-filter' && (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                <Filter size={24} style={{ color: 'var(--cosmic-light)' }} />
+              </div>
+              <p className="text-lg font-semibold mb-2" style={{ fontFamily: 'var(--font-title)' }}>
+                Nenhum {filter === 'video' ? 'vídeo' : 'foto'} ainda
+              </p>
+              <p className="text-muted text-sm mb-5">
+                Ainda não há {filter === 'video' ? 'vídeos' : 'fotos'} aprovados nesta galeria.
+              </p>
+              <button onClick={() => setFilter('all')} className="btn btn-secondary">
+                Ver todas as memórias
+              </button>
             </div>
           )}
 

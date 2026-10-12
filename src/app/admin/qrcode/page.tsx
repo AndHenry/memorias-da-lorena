@@ -18,11 +18,11 @@ export default function AdminQRCodePage() {
 
   useEffect(() => {
     // Determine the base origin
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://memorias-da-lorena.netlify.app'
     setSiteUrl(origin)
   }, [])
 
-  const targetUrl = siteUrl ? `${siteUrl}/e/${EVENT_SLUG}` : ''
+  const targetUrl = siteUrl ? `${siteUrl}/` : 'https://memorias-da-lorena.netlify.app/'
 
   useEffect(() => {
     if (!targetUrl) return
@@ -254,8 +254,8 @@ export default function AdminQRCodePage() {
               <p className="text-xs text-amber-200 mt-4 font-medium text-center leading-relaxed">
                 Aponte a câmera do celular para compartilhar suas fotos e vídeos!
               </p>
-              <p className="text-[10px] text-slate-400 mt-2 font-mono">
-                {EVENT_SLUG}
+              <p className="text-[10px] text-slate-400 mt-2 font-mono truncate max-w-full px-2">
+                {targetUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
               </p>
             </div>
           </div>
