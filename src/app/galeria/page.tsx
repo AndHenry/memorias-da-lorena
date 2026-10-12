@@ -17,6 +17,7 @@ import {
   Play,
   Sparkles,
   MessageSquareQuote,
+  Clock,
 } from 'lucide-react'
 import StarField from '@/components/ui/StarField'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -36,6 +37,17 @@ function getSessionToken(): string {
     localStorage.setItem('lorena_reaction_token', token)
   }
   return token
+}
+
+function formatUploadDateTime(dateStr: string): string {
+  try {
+    const d = new Date(dateStr)
+    const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    const day = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    return `${day} às ${time}`
+  } catch {
+    return ''
+  }
 }
 
 export default function GaleriaPage() {
@@ -676,26 +688,31 @@ export default function GaleriaPage() {
                         />
                       </button>
 
-                      {/* Overlay footer */}
+                      {/* Rodapé fixo do card: Nome centralizado e Horário visível para todos */}
                       <div
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2.5"
-                        style={{
-                          background: 'linear-gradient(to top, rgba(3,7,18,0.92) 0%, rgba(3,7,18,0.3) 50%, transparent 100%)',
-                        }}
+                        className="p-3 text-center flex flex-col items-center justify-center border-t border-white/10"
+                        style={{ background: 'rgba(6, 10, 24, 0.94)' }}
                       >
-                        <div className="flex items-center justify-between text-xs">
-                          <p className="font-semibold truncate mr-2" style={{ color: 'var(--star-gold)' }}>
-                            {item.uploader_name}
-                          </p>
-                          {(item.likes_count || 0) > 0 && (
-                            <span className="flex items-center gap-1 text-[11px] font-medium text-rose-300">
-                              <Heart size={10} fill="#f43f5e" color="#f43f5e" />
-                              {item.likes_count}
-                            </span>
-                          )}
-                        </div>
+                        {/* Nome centralizado */}
+                        <p
+                          className="font-semibold text-xs sm:text-sm text-center truncate w-full"
+                          style={{ color: 'var(--star-gold)', fontFamily: 'var(--font-title)' }}
+                        >
+                          {item.uploader_name}
+                        </p>
+
+                        {/* Horário que foi enviada centralizado */}
+                        <p className="text-[10px] sm:text-[11px] text-muted text-center mt-1 flex items-center justify-center gap-1">
+                          <Clock size={11} className="opacity-75 text-amber-300" />
+                          <span>{formatUploadDateTime(item.created_at)}</span>
+                        </p>
+
+                        {/* Legenda (se houver) */}
                         {item.caption && (
-                          <p className="text-[11px] text-star-silver italic truncate mt-0.5 opacity-90">
+                          <p
+                            className="text-[11px] italic text-star-silver/80 text-center truncate w-full mt-1.5 px-1"
+                            title={item.caption}
+                          >
                             &ldquo;{item.caption}&rdquo;
                           </p>
                         )}

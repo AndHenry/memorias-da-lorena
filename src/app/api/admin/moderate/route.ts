@@ -92,5 +92,23 @@ export async function GET(request: NextRequest) {
   const { data: media, error } = await query
   if (error) return NextResponse.json({ error: 'Erro ao buscar mídias.' }, { status: 500 })
 
-  return NextResponse.json({ media: media || [] })
+  const itemsWithUrls = await Promise.all(
+    (media || []).map(async (item) => {
+      const thumbPath = item.thumbnail_path || item.storage_path
+      const { data: thumbData } = await supabaseAdmin.storage
+        .from('media')
+        .createSignedUrl(thumbPath, 60 * 60)
+      const { data: fullData } = await supabaseAdmin.storage
+        .from('media')
+        .createSignedUrl(item.storage_path, 60 * 60)
+
+      return {
+        ...item,
+        previewUrl: thumbData?.signedUrl || null,
+        fullUrl: fullData?.signedUrl || null,
+      }
+    })
+  )
+
+  return NextResponse.json({ media: itemsWithUrls })
 }

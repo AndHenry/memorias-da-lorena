@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
+import { getAdminUser } from '@/lib/supabase/server'
+
 type Params = { params: Promise<{ id: string }> }
 
 // GET /api/media/[id]/signed-url — returns a redirect to a signed URL
@@ -13,7 +15,9 @@ export async function GET(request: NextRequest, { params }: Params) {
     .eq('id', id)
     .single()
 
-  if (!media || media.moderation_status !== 'approved') {
+  const adminUser = await getAdminUser(request)
+
+  if (!media || (media.moderation_status !== 'approved' && !adminUser)) {
     return NextResponse.json({ error: 'Arquivo não encontrado.' }, { status: 404 })
   }
 

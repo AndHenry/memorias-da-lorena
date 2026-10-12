@@ -45,6 +45,8 @@ export interface Media {
   // client-side enrichment (not from DB)
   reactions?: ReactionSummary[]
   userReacted?: EmojiType[]
+  previewUrl?: string | null
+  fullUrl?: string | null
 }
 
 export type EmojiType = 'heart' | 'star' | 'wow' | 'laugh'
