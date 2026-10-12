@@ -229,7 +229,7 @@ export default function HomeClient() {
       </section>
 
       {/* ── FOOTER ─────────────────────────────────────── */}
-      <footer className="py-8 px-5 text-center text-muted text-sm border-t" style={{ borderColor: 'var(--glass-border)' }}>
+      <footer className="px-5 text-center text-muted text-sm border-t" style={{ borderColor: 'var(--glass-border)', paddingTop: '2rem', paddingBottom: '5rem' }}>
         <p>Feito com <span style={{ color: 'var(--aurora-pink)' }}>♥</span> para a Lorena Rayla · 17 de outubro de 2026</p>
         <p className="mt-1 opacity-50 text-xs">Memórias da Lorena — Uma Noite Estrelada</p>
       </footer>
