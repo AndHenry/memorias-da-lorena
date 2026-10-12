@@ -98,12 +98,14 @@ export default function HomeClient() {
         </nav>
       </header>
 
+
       {/* ── VISUALIZAÇÃO: CRONOGRAMA ── */}
       {activeTab === 'cronograma' && (
-        <section className="pt-4 pb-20">
+        <section className="pb-20" style={{ paddingTop: '5rem' }}>
           <CronogramaTimeline />
         </section>
       )}
+
 
       {/* ── VISUALIZAÇÃO: ÁLBUM DE MEMÓRIAS ── */}
       {activeTab === 'memorias' && (
@@ -168,20 +170,20 @@ export default function HomeClient() {
 
         {/* CTA Buttons */}
         <div
-          className="w-full max-w-sm sm:max-w-none mx-auto flex flex-col sm:flex-row gap-5 sm:gap-6 justify-center items-stretch sm:items-center animate-slide-up"
+          className="w-full max-w-sm mx-auto flex flex-col gap-4 justify-center items-stretch animate-slide-up"
           style={{ marginTop: '1rem', animationDelay: '0.3s' }}
         >
           {uploadEnabled ? (
             <Link
               href="/identificacao"
-              className="btn btn-primary btn-lg w-full sm:w-auto shadow-lg shadow-amber-400/20 py-4 px-8 text-center flex items-center justify-center gap-3"
+              className="btn btn-primary btn-lg w-full py-4 px-8 text-center flex items-center justify-center gap-3"
             >
               <Camera size={22} />
               <span>Enviar minhas lembranças</span>
             </Link>
           ) : (
             <div
-              className="glass-card px-6 py-4 text-center max-w-sm"
+              className="glass-card px-6 py-4 text-center"
               style={{ borderColor: 'rgba(244,208,63,0.2)' }}
             >
               <p className="text-muted text-sm">O envio de fotos foi encerrado.</p>
@@ -192,33 +194,32 @@ export default function HomeClient() {
           )}
           <Link
             href="/galeria"
-            className="btn btn-secondary btn-lg w-full sm:w-auto py-4 px-8 text-center flex items-center justify-center gap-3"
+            className="btn btn-secondary btn-lg w-full py-4 px-8 text-center flex items-center justify-center gap-3"
           >
             <Star size={20} />
             <span>Ver galeria</span>
           </Link>
-        </div>
-
-        {/* Shortcut to Cronograma */}
-        <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
           <button
             type="button"
             onClick={() => {
               setActiveTab('cronograma')
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-full glass-card hover:bg-white/10 transition-all border border-amber-400/25 text-amber-300 shadow-md shadow-amber-400/5 hover:border-amber-300"
+            className="btn btn-secondary btn-lg w-full py-4 px-8 flex items-center justify-center gap-3"
+            style={{ borderColor: 'rgba(244,208,63,0.35)', color: 'var(--star-gold)' }}
           >
-            <Sparkles size={14} className="text-amber-400 animate-pulse" />
-            <span>✨ Ver o Cronograma da Festa (Horários & Roteiro)</span>
-            <ChevronRight size={14} />
+            <Sparkles size={20} />
+            <span>Ver o Cronograma da Festa</span>
+            <ChevronRight size={18} />
           </button>
         </div>
 
+
+
         {/* Scroll hint */}
         <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
-          style={{ opacity: scrolled ? 0 : 0.5, transition: 'opacity 0.3s' }}
+          className="mt-8 flex justify-center animate-bounce"
+          style={{ opacity: scrolled ? 0 : 0.6, transition: 'opacity 0.3s' }}
           aria-hidden="true"
         >
           <ChevronDown size={24} style={{ color: 'var(--star-gold)' }} />
