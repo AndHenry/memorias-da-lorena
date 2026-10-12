@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Camera, Images, Star, MapPin, Calendar, Clock, ChevronDown, Heart, Shield } from 'lucide-react'
+import { Camera, Images, Star, MapPin, Calendar, Clock, ChevronDown, Heart, Shield, Sparkles, ChevronRight } from 'lucide-react'
 import StarField from '@/components/ui/StarField'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import CronogramaTimeline from '@/components/cronograma/CronogramaTimeline'
 
 interface EventStats {
   totalPhotos: number
@@ -13,10 +14,20 @@ interface EventStats {
 }
 
 export default function HomeClient() {
+  const [activeTab, setActiveTab] = useState<'memorias' | 'cronograma'>('memorias')
   const [stats, setStats] = useState<EventStats | null>(null)
   const [uploadEnabled, setUploadEnabled] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const eventDate = new Date('2026-10-17T22:30:00-03:00')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('tab') === 'cronograma' || window.location.hash === '#cronograma') {
+        setActiveTab('cronograma')
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -43,16 +54,67 @@ export default function HomeClient() {
     })
 
   return (
-    <main className="page-wrapper">
+    <main className="page-wrapper min-h-screen">
       <StarField count={140} />
 
-      {/* ── HERO SECTION ─────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-16 pb-24 text-center">
-        {/* Decorative ring */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      {/* ── BARRA FLUTUANTE DE SELEÇÃO: MEMÓRIAS OU CRONOGRAMA ── */}
+      <header className="sticky top-3 sm:top-5 z-40 w-full px-3 sm:px-4 flex justify-center pt-2">
+        <nav
+          aria-label="Escolher visualização"
+          className="glass-card px-1.5 py-1.5 rounded-full flex items-center gap-1 shadow-2xl shadow-black/80 border border-white/10"
+          style={{ background: 'rgba(6, 10, 24, 0.88)', backdropFilter: 'blur(20px)' }}
         >
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('memorias')
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            className={`px-3.5 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'memorias'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 scale-100 font-bold'
+                : 'text-slate-300 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Images size={15} />
+            <span>Álbum de Fotos</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('cronograma')
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            className={`px-3.5 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'cronograma'
+                ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 text-white shadow-md shadow-pink-500/30 scale-100 font-bold'
+                : 'text-slate-300 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Clock size={15} />
+            <span>Cronograma da Festa</span>
+          </button>
+        </nav>
+      </header>
+
+      {/* ── VISUALIZAÇÃO: CRONOGRAMA ── */}
+      {activeTab === 'cronograma' && (
+        <section className="pt-4 pb-20">
+          <CronogramaTimeline />
+        </section>
+      )}
+
+      {/* ── VISUALIZAÇÃO: ÁLBUM DE MEMÓRIAS ── */}
+      {activeTab === 'memorias' && (
+        <>
+          {/* ── HERO SECTION ─────────────────────────────── */}
+          <section className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-16 pb-24 text-center">
+            {/* Decorative ring */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
           <div
             style={{
               width: 'min(600px, 90vw)',
@@ -135,6 +197,22 @@ export default function HomeClient() {
             <Star size={20} />
             <span>Ver galeria</span>
           </Link>
+        </div>
+
+        {/* Shortcut to Cronograma */}
+        <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('cronograma')
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-full glass-card hover:bg-white/10 transition-all border border-amber-400/25 text-amber-300 shadow-md shadow-amber-400/5 hover:border-amber-300"
+          >
+            <Sparkles size={14} className="text-amber-400 animate-pulse" />
+            <span>✨ Ver o Cronograma da Festa (Horários & Roteiro)</span>
+            <ChevronRight size={14} />
+          </button>
         </div>
 
         {/* Scroll hint */}
@@ -227,6 +305,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
       {/* ── FOOTER ─────────────────────────────────────── */}
       <footer className="px-5 text-center text-muted text-sm border-t" style={{ borderColor: 'var(--glass-border)', paddingTop: '2rem', paddingBottom: '5rem' }}>
