@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
   const page = Math.max(0, parseInt(searchParams.get('page') || '0'))
   const limit = Math.min(50, parseInt(searchParams.get('limit') || String(PAGE_SIZE)))
   const type = searchParams.get('type') // 'photo' | 'video' | null
+  const uploaderSearch = searchParams.get('uploader') || null // busca por nome
+  const sortBy = searchParams.get('sort') || 'newest' // 'newest' | 'most_liked'
 
   // Get event
   const { data: event } = await supabaseAdmin
@@ -28,14 +30,24 @@ export async function GET(request: NextRequest) {
   // Query approved media
   let query = supabaseAdmin
     .from('media')
-    .select('id, uploader_name, media_type, original_filename, file_size, mime_type, likes_count, created_at, storage_path, thumbnail_path')
+    .select('id, uploader_name, media_type, original_filename, file_size, mime_type, likes_count, caption, created_at, storage_path, thumbnail_path')
     .eq('event_id', event.id)
     .eq('moderation_status', 'approved')
-    .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * limit - 1)
+
+  // Sort
+  if (sortBy === 'most_liked') {
+    query = query.order('likes_count', { ascending: false }).order('created_at', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   if (type === 'photo' || type === 'video') {
     query = query.eq('media_type', type)
+  }
+
+  if (uploaderSearch) {
+    query = query.ilike('uploader_name', `%${uploaderSearch}%`)
   }
 
   const { data: media, error } = await query

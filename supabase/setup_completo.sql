@@ -239,3 +239,40 @@ CREATE POLICY "Allow read from media"
 DROP POLICY IF EXISTS "Allow admin delete from media" ON storage.objects;
 CREATE POLICY "Allow admin delete from media"
   ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'media');
+
+-- ============================================================
+-- MIGRATION: FEATURES — Legendas, Reações e Slideshow
+-- Execute no SQL Editor do Supabase após o setup inicial
+-- ============================================================
+
+-- 14. Coluna: caption (legenda) na tabela media
+ALTER TABLE public.media ADD COLUMN IF NOT EXISTS caption TEXT;
+
+-- 15. Tabela: media_reactions (reações por emoji, sem autenticação)
+CREATE TABLE IF NOT EXISTS public.media_reactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  media_id UUID NOT NULL REFERENCES public.media(id) ON DELETE CASCADE,
+  session_token TEXT NOT NULL,
+  emoji TEXT NOT NULL DEFAULT 'heart' CHECK (emoji IN ('heart', 'star', 'wow', 'laugh')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(media_id, session_token, emoji)
+);
+
+CREATE INDEX IF NOT EXISTS reactions_media_idx ON public.media_reactions(media_id);
+CREATE INDEX IF NOT EXISTS reactions_session_idx ON public.media_reactions(session_token);
+
+-- RLS para media_reactions
+ALTER TABLE public.media_reactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view reactions" ON public.media_reactions;
+CREATE POLICY "Anyone can view reactions"
+  ON public.media_reactions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can react to media" ON public.media_reactions;
+CREATE POLICY "Anyone can react to media"
+  ON public.media_reactions FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can remove their own reaction" ON public.media_reactions;
+CREATE POLICY "Anyone can remove their own reaction"
+  ON public.media_reactions FOR DELETE USING (true);
+

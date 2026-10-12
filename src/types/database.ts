@@ -40,6 +40,25 @@ export interface Media {
   duration_seconds: number | null
   moderation_status: ModerationStatus
   likes_count: number
+  caption: string | null
+  created_at: string
+  // client-side enrichment (not from DB)
+  reactions?: ReactionSummary[]
+  userReacted?: EmojiType[]
+}
+
+export type EmojiType = 'heart' | 'star' | 'wow' | 'laugh'
+
+export interface ReactionSummary {
+  emoji: EmojiType
+  count: number
+}
+
+export interface MediaReaction {
+  id: string
+  media_id: string
+  session_token: string
+  emoji: EmojiType
   created_at: string
 }
 
@@ -87,6 +106,8 @@ export interface UploadFile {
   status: 'pending' | 'uploading' | 'success' | 'error'
   error?: string
   mediaId?: string
+  caption?: string
+  thumbnailBlob?: Blob | null
 }
 
 export interface GalleryFilters {
@@ -191,6 +212,7 @@ export type Database = {
           duration_seconds: number | null
           moderation_status: ModerationStatus
           likes_count: number
+          caption: string | null
           created_at: string
         }
         Insert: {
@@ -208,6 +230,7 @@ export type Database = {
           duration_seconds?: number | null
           moderation_status?: ModerationStatus
           likes_count?: number
+          caption?: string | null
           created_at?: string
         }
         Update: {
@@ -225,6 +248,7 @@ export type Database = {
           duration_seconds?: number | null
           moderation_status?: ModerationStatus
           likes_count?: number
+          caption?: string | null
           created_at?: string
         }
         Relationships: [
@@ -320,6 +344,38 @@ export type Database = {
           created_at?: string
         }
         Relationships: []
+      }
+      media_reactions: {
+        Row: {
+          id: string
+          media_id: string
+          session_token: string
+          emoji: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          media_id: string
+          session_token: string
+          emoji?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          media_id?: string
+          session_token?: string
+          emoji?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_reactions_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

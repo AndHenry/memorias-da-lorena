@@ -22,6 +22,7 @@ export default function EnviarPage() {
   const { toasts, show, remove } = useToast()
   const [dragOver, setDragOver] = useState(false)
   const [allDone, setAllDone] = useState(false)
+  const [sharedCaption, setSharedCaption] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Redirect if not identified
@@ -64,7 +65,7 @@ export default function EnviarPage() {
         )
         setAllDone(true)
       }
-    })
+    }, sharedCaption)
   }
 
   const pendingCount = files.filter((f) => f.status === 'pending').length
@@ -115,7 +116,7 @@ export default function EnviarPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/galeria" className="btn btn-primary">Ver a galeria</Link>
-                <button onClick={() => { clearAll(); setAllDone(false) }} className="btn btn-secondary">
+                <button onClick={() => { clearAll(); setAllDone(false); setSharedCaption('') }} className="btn btn-secondary">
                   Enviar mais fotos
                 </button>
               </div>
@@ -176,18 +177,40 @@ export default function EnviarPage() {
                   {files.map((file) => (
                     <FileItem key={file.id} file={file} onRemove={removeFile} onRetry={retryFile} />
                   ))}
-
-                  {/* Add more */}
-                  {files.length < MAX_FILES && !isUploading && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed text-sm transition-colors"
-                      style={{ borderColor: 'var(--glass-border)', color: 'rgba(221,230,247,0.5)' }}
-                    >
-                      <Plus size={16} /> Adicionar mais
-                    </button>
-                  )}
                 </div>
+              )}
+
+              {/* Caption field — shared for all files in this batch */}
+              {files.length > 0 && !isUploading && (
+                <div className="glass-card p-4 mb-6" style={{ borderColor: 'rgba(244,208,63,0.15)' }}>
+                  <label className="label-field mb-2 block">
+                    💬 Legenda para suas fotos{' '}
+                    <span className="text-xs font-normal opacity-60">(opcional, até 300 caracteres)</span>
+                  </label>
+                  <textarea
+                    className="input-field resize-none"
+                    rows={2}
+                    maxLength={300}
+                    placeholder="Ex: Esse momento foi incrível! 🥺✨"
+                    value={sharedCaption}
+                    onChange={(e) => setSharedCaption(e.target.value)}
+                    style={{ fontFamily: 'var(--font-body)' }}
+                  />
+                  <p className="text-right text-xs mt-1" style={{ color: 'rgba(221,230,247,0.35)' }}>
+                    {sharedCaption.length}/300
+                  </p>
+                </div>
+              )}
+
+              {/* Add more */}
+              {files.length < MAX_FILES && !isUploading && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed text-sm transition-colors mb-6"
+                  style={{ borderColor: 'var(--glass-border)', color: 'rgba(221,230,247,0.5)' }}
+                >
+                  <Plus size={16} /> Adicionar mais
+                </button>
               )}
 
               {/* Upload button */}
@@ -257,9 +280,17 @@ function FileItem({
       {/* Thumbnail */}
       <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center relative"
         style={{ background: 'rgba(255,255,255,0.05)' }}>
-        {file.preview && !isVideo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={file.preview} alt="" className="w-full h-full object-cover" />
+        {file.preview ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={file.preview} alt="" className="w-full h-full object-cover" />
+            {isVideo && (
+              <span className="absolute bottom-0 right-0 text-[9px] font-bold px-1 rounded-tl flex items-center gap-0.5"
+                style={{ background: 'rgba(0,0,0,0.75)', color: 'var(--star-gold)' }}>
+                <Film size={8} /> {duration || 'Vídeo'}
+              </span>
+            )}
+          </>
         ) : isVideo ? (
           <>
             <Film size={20} style={{ color: 'var(--cosmic-light)' }} />

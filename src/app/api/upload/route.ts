@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
     const eventSlug = formData.get('eventSlug') as string | null
     const originalFilename = formData.get('originalFilename') as string | null
     const mediaType = formData.get('mediaType') as 'photo' | 'video' | null
+    const captionRaw = formData.get('caption') as string | null
+    const caption = captionRaw?.trim().slice(0, 300) || null
 
     // Validate required fields
     if (!file || !storagePath || !guestName || !sessionToken || !eventSlug || !mediaType) {
@@ -98,6 +100,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Upload thumbnail if provided (e.g. for videos)
+    const thumbnailFile = formData.get('thumbnail') as File | null
+    let thumbnailPath: string | null = null
+    if (thumbnailFile) {
+      try {
+        const thumbBuffer = Buffer.from(await thumbnailFile.arrayBuffer())
+        const thumbStoragePath = storagePath.replace(/\.[^/.]+$/, '') + '_thumb.jpg'
+        const { error: thumbErr } = await supabaseAdmin.storage
+          .from('media')
+          .upload(thumbStoragePath, thumbBuffer, {
+            contentType: 'image/jpeg',
+            upsert: true,
+            cacheControl: '86400',
+          })
+        if (!thumbErr) {
+          thumbnailPath = thumbStoragePath
+        }
+      } catch (err) {
+        console.warn('Falha ao processar miniatura de vídeo:', err)
+      }
+    }
+
     // Insert media record
     const { data: mediaRecord, error: dbError } = await supabaseAdmin
       .from('media')
@@ -105,11 +129,13 @@ export async function POST(request: NextRequest) {
         event_id: event.id,
         uploader_name: guestName.trim(),
         storage_path: storagePath,
+        thumbnail_path: thumbnailPath,
         media_type: mediaType,
         original_filename: originalFilename,
         file_size: file.size,
         mime_type: mimeType,
         moderation_status: event.moderation_enabled ? 'pending' : 'approved',
+        caption,
       })
       .select('id')
       .single()

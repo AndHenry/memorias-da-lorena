@@ -9,6 +9,7 @@ import {
   getMediaType,
   sanitizeFilename,
 } from '@/lib/validations'
+import { extractVideoThumbnail } from '@/lib/video-thumbnail'
 
 const MAX_PHOTO_MB = parseInt(process.env.NEXT_PUBLIC_MAX_PHOTO_MB || '15')
 const MAX_VIDEO_MB = parseInt(process.env.NEXT_PUBLIC_MAX_VIDEO_MB || '100')
@@ -41,9 +42,28 @@ export function useUpload() {
         preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
         progress: 0,
         status: 'pending' as const,
+        caption: '',
       }))
 
       setFiles((prev) => [...prev, ...uploadFiles])
+
+      // Gera thumbnail real para vídeos em segundo plano
+      uploadFiles.forEach(async (uFile) => {
+        if (uFile.file.type.startsWith('video/')) {
+          const thumbBlob = await extractVideoThumbnail(uFile.file)
+          if (thumbBlob) {
+            const thumbUrl = URL.createObjectURL(thumbBlob)
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === uFile.id
+                  ? { ...f, preview: thumbUrl, thumbnailBlob: thumbBlob }
+                  : f
+              )
+            )
+          }
+        }
+      })
+
       return { added: valid.length, errors }
     },
     [files.length]
@@ -70,7 +90,8 @@ export function useUpload() {
       eventSlug: string,
       guestName: string,
       sessionToken: string,
-      onComplete?: (count: number) => void
+      onComplete?: (count: number) => void,
+      sharedCaption?: string
     ) => {
       const pending = files.filter((f) => f.status === 'pending')
       if (!pending.length || isUploading) return
@@ -94,6 +115,13 @@ export function useUpload() {
           formData.append('eventSlug', eventSlug)
           formData.append('originalFilename', sanitizeFilename(uploadFile.file.name))
           formData.append('mediaType', getMediaType(uploadFile.file))
+          // caption: per-file or shared
+          const caption = uploadFile.caption?.trim() || sharedCaption?.trim() || ''
+          if (caption) formData.append('caption', caption)
+          // Video thumbnail blob
+          if (uploadFile.thumbnailBlob) {
+            formData.append('thumbnail', uploadFile.thumbnailBlob, 'thumbnail.jpg')
+          }
 
           // Use XMLHttpRequest for progress tracking
           await new Promise<void>((resolve, reject) => {
@@ -160,6 +188,10 @@ export function useUpload() {
     )
   }, [])
 
+  const updateCaption = useCallback((id: string, caption: string) => {
+    setFiles((prev) => prev.map((f) => f.id === id ? { ...f, caption } : f))
+  }, [])
+
   const cancelUpload = useCallback(() => {
     abortRef.current?.abort()
     setIsUploading(false)
@@ -175,6 +207,7 @@ export function useUpload() {
     uploadAll,
     retryFile,
     cancelUpload,
+    updateCaption,
     MAX_FILES,
     MAX_PHOTO_MB,
     MAX_VIDEO_MB,

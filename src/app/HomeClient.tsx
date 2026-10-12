@@ -199,6 +199,18 @@ export default function HomeClient() {
             <Star size={20} />
             <span>Ver galeria</span>
           </Link>
+          <Link
+            href="/slideshow"
+            className="btn btn-secondary btn-lg w-full py-4 px-8 text-center flex items-center justify-center gap-3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(244,208,63,0.12), rgba(167,139,250,0.15))',
+              borderColor: 'rgba(244,208,63,0.35)',
+              color: 'var(--star-gold)',
+            }}
+          >
+            <Sparkles size={20} />
+            <span>Vídeo Recordação ✨</span>
+          </Link>
           <button
             type="button"
             onClick={() => {
@@ -208,7 +220,7 @@ export default function HomeClient() {
             className="btn btn-secondary btn-lg w-full py-4 px-8 flex items-center justify-center gap-3"
             style={{ borderColor: 'rgba(244,208,63,0.35)', color: 'var(--star-gold)' }}
           >
-            <Sparkles size={20} />
+            <Clock size={20} />
             <span>Ver o Cronograma da Festa</span>
             <ChevronRight size={18} />
           </button>
@@ -318,11 +330,45 @@ export default function HomeClient() {
   )
 }
 
+function AnimatedNumber({ value }: { value: number }) {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (value <= 0) {
+      setCount(0)
+      return
+    }
+    const duration = 1400
+    let startTime: number | null = null
+
+    const step = (now: number) => {
+      if (!startTime) startTime = now
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const ease = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.round(value * ease))
+      if (progress < 1) {
+        requestAnimationFrame(step)
+      }
+    }
+
+    const frameId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(frameId)
+  }, [value])
+
+  return <span>{count}</span>
+}
+
 function StatPill({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (
-    <div className="glass-card px-5 py-3 flex items-center gap-2">
+    <div
+      className="glass-card px-5 py-3 flex items-center gap-2 transform hover:scale-105 transition-all duration-300 shadow-md shadow-black/20"
+      style={{ borderColor: 'rgba(244,208,63,0.18)' }}
+    >
       <span style={{ color: 'var(--star-gold)' }}>{icon}</span>
-      <span className="font-bold" style={{ color: 'var(--star-gold)' }}>{value}</span>
+      <span className="font-bold text-base" style={{ color: 'var(--star-gold)' }}>
+        <AnimatedNumber value={value} />
+      </span>
       <span className="text-muted text-sm">{label}</span>
     </div>
   )
