@@ -5,6 +5,7 @@ import { Camera, Film, Users, Clock, HardDrive, Images } from 'lucide-react'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import type { AdminStats } from '@/types/database'
 import { formatBytes } from '@/lib/validations'
+import { authFetch } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 const EVENT_SLUG = process.env.NEXT_PUBLIC_EVENT_SLUG || 'lorena-rayla-xv'
@@ -14,7 +15,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/admin/stats?slug=${EVENT_SLUG}`)
+    authFetch(`/api/admin/stats?slug=${EVENT_SLUG}`)
       .then((r) => r.json())
       .then((data) => { if (data.stats) setStats(data.stats) })
       .catch(() => {})

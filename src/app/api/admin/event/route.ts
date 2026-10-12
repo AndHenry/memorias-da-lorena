@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getAdminUser } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
 // GET /api/admin/event — get event config
 export async function GET(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAdminUser(request)
   if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
 
   const slug = new URL(request.url).searchParams.get('slug') || 'lorena-rayla-xv'
@@ -17,8 +16,7 @@ export async function GET(request: NextRequest) {
 
 // PATCH /api/admin/event — update event config
 export async function PATCH(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAdminUser(request)
   if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
 
   const body = await request.json()

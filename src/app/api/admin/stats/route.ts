@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getAdminUser } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-
-// Middleware helper — returns the authenticated admin user or null
-export async function getAdminUser() {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
 
 // GET /api/admin/stats
 export async function GET(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAdminUser(request)
 
   if (!user) {
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getAdminUser } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
 // POST /api/admin/moderate
 // Body: { mediaId, action: 'approve' | 'reject' | 'delete', adminId }
 export async function POST(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAdminUser(request)
 
   if (!user) {
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
@@ -59,8 +58,7 @@ export async function POST(request: NextRequest) {
 
 // GET /api/admin/moderate — list pending/all media for moderation
 export async function GET(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAdminUser(request)
 
   if (!user) {
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })

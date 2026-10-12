@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { QrCode, Download, Copy, Check, Printer, Sparkles, ExternalLink } from 'lucide-react'
+import QRCode from 'qrcode'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
@@ -26,10 +27,26 @@ export default function AdminQRCodePage() {
   useEffect(() => {
     if (!targetUrl) return
     setIsLoading(true)
-    const pngEndpoint = `/api/qrcode?format=png&size=${qrSize}&url=${encodeURIComponent(targetUrl)}`
-    setQrPngUrl(pngEndpoint)
-    setIsLoading(false)
-  }, [targetUrl, qrSize])
+    QRCode.toDataURL(targetUrl, {
+      width: parseInt(qrSize, 10),
+      margin: 2,
+      color: {
+        dark: '#1a0a3e',
+        light: '#ffffff',
+      },
+      errorCorrectionLevel: 'H',
+    })
+      .then((dataUrl) => {
+        setQrPngUrl(dataUrl)
+      })
+      .catch((err) => {
+        console.error('Erro ao gerar QR Code:', err)
+        show('Erro ao gerar imagem do QR Code.', 'error')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [targetUrl, qrSize, show])
 
   const handleCopy = () => {
     if (!targetUrl) return
@@ -39,16 +56,42 @@ export default function AdminQRCodePage() {
     setTimeout(() => setCopied(false), 2500)
   }
 
-  const handleDownload = (format: 'png' | 'svg') => {
+  const handleDownload = async (format: 'png' | 'svg') => {
     if (!targetUrl) return
-    const endpoint = `/api/qrcode?format=${format}&size=${qrSize}&url=${encodeURIComponent(targetUrl)}`
-    const a = document.createElement('a')
-    a.href = endpoint
-    a.download = `qrcode-lorena-rayla-${format === 'png' ? `${qrSize}px` : 'vetorial'}.${format}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    show(`Download do QR Code (${format.toUpperCase()}) iniciado!`, 'success')
+    try {
+      if (format === 'png') {
+        if (!qrPngUrl) return
+        const a = document.createElement('a')
+        a.href = qrPngUrl
+        a.download = `qrcode-lorena-rayla-${qrSize}px.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        show(`Download do QR Code (PNG ${qrSize}px) concluído!`, 'success')
+      } else {
+        const svgString = await QRCode.toString(targetUrl, {
+          type: 'svg',
+          margin: 2,
+          color: {
+            dark: '#1a0a3e',
+            light: '#ffffff',
+          },
+          errorCorrectionLevel: 'H',
+        })
+        const blob = new Blob([svgString], { type: 'image/svg+xml' })
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = 'qrcode-lorena-rayla-vetorial.svg'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(blobUrl)
+        show('Download do QR Code (SVG) concluído!', 'success')
+      }
+    } catch {
+      show('Falha ao gerar arquivo para download.', 'error')
+    }
   }
 
   const handlePrint = () => {

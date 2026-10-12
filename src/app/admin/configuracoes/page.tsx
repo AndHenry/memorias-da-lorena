@@ -5,6 +5,7 @@ import { Save, Settings, ShieldCheck, UploadCloud, Eye, RefreshCw, AlertCircle }
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
 import type { Event, GalleryVisibility, EventStatus } from '@/types/database'
+import { authFetch } from '@/lib/supabase/client'
 
 const EVENT_SLUG = process.env.NEXT_PUBLIC_EVENT_SLUG || 'lorena-rayla-xv'
 
@@ -30,7 +31,7 @@ export default function AdminConfiguracoesPage() {
   const fetchConfig = useCallback(async () => {
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/admin/event?slug=${EVENT_SLUG}`)
+      const res = await authFetch(`/api/admin/event?slug=${EVENT_SLUG}`)
       const data = await res.json()
       if (!res.ok) {
         show(data.error || 'Erro ao carregar configurações', 'error')
@@ -81,7 +82,7 @@ export default function AdminConfiguracoesPage() {
         max_files_per_upload: Number(maxFilesPerUpload),
       }
 
-      const res = await fetch('/api/admin/event', {
+      const res = await authFetch('/api/admin/event', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

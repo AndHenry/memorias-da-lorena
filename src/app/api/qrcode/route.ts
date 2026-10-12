@@ -4,9 +4,6 @@ import { generateQRCodePNG, generateQRCodeSVG } from '@/lib/qrcode'
 
 // GET /api/qrcode?format=png|svg&url=...
 export async function GET(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const format = searchParams.get('format') || 'png'
