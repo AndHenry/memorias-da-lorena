@@ -39,19 +39,22 @@ export default function AdminConfiguracoesPage() {
       }
 
       const ev: Event = data.event
-      setEvent(ev)
-      setTitle(ev.title || '')
-      setDescription(ev.description || '')
-      setStatus(ev.status || 'active')
-      setUploadEnabled(ev.upload_enabled ?? true)
-      setUploadClosedMessage(ev.upload_closed_message || 'O período de envio de fotos foi encerrado. Obrigado por participar!')
-      setGalleryVisibility(ev.gallery_visibility || 'public')
-      setModerationEnabled(ev.moderation_enabled ?? false)
-      setDownloadsEnabled(ev.downloads_enabled ?? true)
-      setMaxFileSizeMb(ev.max_file_size_mb || 15)
-      setMaxVideoSizeMb(ev.max_video_size_mb || 100)
-      setMaxFilesPerUpload(ev.max_files_per_upload || 10)
-    } catch {
+      if (ev) {
+        setEvent(ev)
+        setTitle(ev.title || '')
+        setDescription(ev.description || '')
+        setStatus(ev.status || 'active')
+        setUploadEnabled(ev.upload_enabled ?? true)
+        setUploadClosedMessage(ev.upload_closed_message || 'O período de envio de fotos foi encerrado. Obrigado por participar!')
+        setGalleryVisibility(ev.gallery_visibility || 'public')
+        setModerationEnabled(ev.moderation_enabled ?? false)
+        setDownloadsEnabled(ev.downloads_enabled ?? true)
+        setMaxFileSizeMb(ev.max_file_size_mb || 15)
+        setMaxVideoSizeMb(ev.max_video_size_mb || 100)
+        setMaxFilesPerUpload(ev.max_files_per_upload || 10)
+      }
+    } catch (err) {
+      console.error('Erro ao conectar:', err)
       show('Erro ao conectar com o servidor', 'error')
     } finally {
       setIsLoading(false)
@@ -60,7 +63,8 @@ export default function AdminConfiguracoesPage() {
 
   useEffect(() => {
     fetchConfig()
-  }, [fetchConfig])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -18,10 +18,21 @@ export const supabase = createBrowserClient<Database>(
  * Ensures authentication works across cookies and bearer token validation.
  */
 export async function authFetch(url: string, options: RequestInit = {}) {
-  const { data: { session } } = await supabase.auth.getSession()
+  let token: string | undefined
+  try {
+    const sessionPromise = supabase.auth.getSession()
+    const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null } }), 2000)
+    )
+    const result = await Promise.race([sessionPromise, timeoutPromise])
+    token = result?.data?.session?.access_token
+  } catch (err) {
+    console.warn('Could not retrieve access token for authFetch:', err)
+  }
+
   const headers = new Headers(options.headers || {})
-  if (session?.access_token) {
-    headers.set('Authorization', `Bearer ${session.access_token}`)
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
   }
   return fetch(url, {
     ...options,

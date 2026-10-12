@@ -39,7 +39,8 @@ export default function AdminGaleriaPage() {
   useEffect(() => {
     setPage(0)
     fetchMedia(0, filter)
-  }, [filter, fetchMedia])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter])
 
   const handleAction = async (mediaId: string, action: 'approve' | 'reject' | 'delete') => {
     setActionLoading(mediaId)
